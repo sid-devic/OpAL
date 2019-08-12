@@ -44,12 +44,12 @@ class EGLSampling(QueryMethod):
 
         return egls
 
-    def query(self, X_train, Y_train, labeled_idx, amount):
+    def query(self, x_train, y_train, labeled_idx, amount):
 
-        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
-        n_classes = Y_train.shape[1]
+        unlabeled_idx = get_unlabeled_idx(x_train, labeled_idx)
+        n_classes = y_train.shape[1]
 
         # choose the samples with the highest expected gradient length:
-        egls = self.compute_egls(X_train[unlabeled_idx], n_classes)
+        egls = self.compute_egls(x_train[unlabeled_idx], n_classes)
         selected_indices = np.argpartition(egls, -amount)[-amount:]
         return np.hstack((labeled_idx, unlabeled_idx[selected_indices]))

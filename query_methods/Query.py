@@ -1,15 +1,5 @@
 import gc
-from scipy.spatial import distance_matrix
-
-from keras.models import Model
-import keras.backend as K
-from keras.losses import categorical_crossentropy
-from keras.layers import Lambda
-from keras import optimizers
-from cleverhans.attacks import FastGradientMethod, DeepFool
-from cleverhans.utils_keras import KerasModelWrapper
-
-from models import *
+import numpy as np
 
 
 def get_unlabeled_idx(X_train, labeled_idx):
@@ -30,11 +20,11 @@ class QueryMethod:
         self.num_labels = num_labels
         self.gpu = gpu
 
-    def query(self, X_train, Y_train, labeled_idx, amount):
+    def query(self, x_train, y_train, labeled_idx, amount):
         """
         get the indices of labeled examples after the given amount have been queried by the query strategy.
-        :param X_train: the training set
-        :param Y_train: the training labels
+        :param x_train: the training set
+        :param y_train: the training labels
         :param labeled_idx: the indices of the labeled examples
         :param amount: the amount of examples to query
         :return: the new labeled indices (including the ones queried)

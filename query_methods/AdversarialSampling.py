@@ -10,10 +10,10 @@ class AdversarialSampling(QueryMethod):
     def __init__(self, model, input_shape, num_labels, gpu):
         super().__init__(model, input_shape, num_labels, gpu)
 
-    def query(self, X_train, Y_train, labeled_idx, amount):
+    def query(self, x_train, y_train, labeled_idx, amount):
 
-        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
-        unlabeled = X_train[unlabeled_idx]
+        unlabeled_idx = get_unlabeled_idx(x_train, labeled_idx)
+        unlabeled = x_train[unlabeled_idx]
 
         keras_wrapper = KerasModelWrapper(self.model)
         sess = K.get_session()
@@ -21,7 +21,7 @@ class AdversarialSampling(QueryMethod):
         deep_fool_params = {'over_shoot': 0.02,
                             'clip_min': 0.,
                             'clip_max': 1.,
-                            'nb_candidate': Y_train.shape[1],
+                            'nb_candidate': y_train.shape[1],
                             'max_iter': 10}
         true_predictions = np.argmax(self.model.predict(unlabeled, batch_size=256), axis=1)
         adversarial_predictions = np.copy(true_predictions)

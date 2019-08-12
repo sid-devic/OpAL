@@ -1,4 +1,9 @@
+import gc
+
 from .Query import QueryMethod, get_unlabeled_idx
+import numpy as np
+from scipy.spatial import distance_matrix
+from keras.models import Model
 
 
 class CoreSetSampling(QueryMethod):
@@ -38,13 +43,13 @@ class CoreSetSampling(QueryMethod):
 
         return np.array(greedy_indices)
 
-    def query(self, X_train, Y_train, labeled_idx, amount):
+    def query(self, x_train, y_train, labeled_idx, amount):
 
-        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+        unlabeled_idx = get_unlabeled_idx(x_train, labeled_idx)
 
         # use the learned representation for the k-greedy-center algorithm:
         representation_model = Model(inputs=self.model.input, outputs=self.model.get_layer('softmax').input)
-        representation = representation_model.predict(X_train, verbose=0)
+        representation = representation_model.predict(x_train, verbose=0)
         new_indices = self.greedy_k_center(representation[labeled_idx, :], representation[unlabeled_idx, :], amount)
         return np.hstack((labeled_idx, unlabeled_idx[new_indices]))
 
@@ -331,10 +336,9 @@ class CoreSetMIPSampling(QueryMethod):
         new_indices = self.query_regular(subsample, Y_train, new_labeled_idx, amount)
         return np.array(subsample_idx[new_indices - len(labeled_idx)])
 
-
-    def query(self, X_train, Y_train, labeled_idx, amount):
+    def query(self, x_train, y_train, labeled_idx, amount):
 
         if self.subsample:
-            return self.query_subsample(X_train, Y_train, labeled_idx, amount)
+            return self.query_subsample(x_train, y_train, labeled_idx, amount)
         else:
-            return self.query_regular(X_train, Y_train, labeled_idx, amount)
+            return self.query_regular(x_train, y_train, labeled_idx, amount)
