@@ -47,12 +47,12 @@ class ActiveLearningExperiment:
         2. log test acc and history of labeled indices
         3. add new labels to labeled set
         """
-        # 1. Train, discard the new model
-        test_acc, _ = self.train_func(self.model,
-                                      self.x_train[self.labeled_idx],
-                                      self.y_train[self.labeled_idx],
-                                      self.x_test,
-                                      self.y_test)
+        # 1. Train using the given keras Model object
+        test_acc, trained_model = self.train_func(self.model,
+                                                  self.x_train[self.labeled_idx],
+                                                  self.y_train[self.labeled_idx],
+                                                  self.x_test,
+                                                  self.y_test)
         # 2. Log
         self.test_acc_hist.append(test_acc)
         self.labeled_idx_hist.append(self.labeled_idx)
@@ -60,8 +60,9 @@ class ActiveLearningExperiment:
             f.write(str(self.test_acc_hist).strip('[]'))
             for _iter in range(len(self.labeled_idx_hist)):
                 f.write(str(self.labeled_idx_hist[_iter]).strip('[]'))
-        # 3. Query
-        query_obj = self.query_func(self.model, self.x_train.shape[0], self.y_train.shape[0], 1)
+
+        # 3. Query using the new model we just learned
+        query_obj = self.query_func(trained_model, self.x_train.shape[0], self.y_train.shape[0], 1)
         self.labeled_idx = query_obj.query(self.x_train, self.y_train, self.labeled_idx, self.num_add_per_iter)
 
     def begin_al_loop(self, ):

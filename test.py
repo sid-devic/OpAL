@@ -34,16 +34,6 @@ def train(model, x_train, y_train, x_test, y_test):
 
 
 def main():
-    """
-    query_method = CoreSetSampling(model, input_shape, num_labels, 1)
-    labeled_idx = np.random.choice(train_x.shape[0], 1000, replace=False)
-    acc, model = train(model, train_x[labeled_idx], train_y[labeled_idx], test_x, test_y)
-    print(len(labeled_idx))
-
-    # Query testing
-    labeled_idx = query_method.query(np.expand_dims(train_x, 3), train_y, labeled_idx, 1000)
-    print(len(labeled_idx))
-    """
     (train_x, train_y), (test_x, test_y) = keras.datasets.mnist.load_data()
     train_y = keras.utils.to_categorical(train_y)
     test_y = keras.utils.to_categorical(test_y)
