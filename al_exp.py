@@ -3,7 +3,7 @@ import numpy as np
 
 
 class ActiveLearningExperiment:
-    def __init__(self, query_method, instance, gpu_index, dataset,
+    def __init__(self, query_method, instance, gpu_index, dataset_name,
                  model, train_func, num_init, num_add_per_iter,
                  num_iter, x_train, y_train, x_test, y_test):
         """
@@ -12,15 +12,12 @@ class ActiveLearningExperiment:
         :param query_method: Query method, child of Query class
         :param instance: Instance of ALexp for this configuration (we may need to run multiple)
         :param gpu_index: index of gpu to run the experiment on
+        :param dataset_name: for logging purposes
         :param model: keras model
-        :param train_func:
+        :param train_func: Training function (see example)
         :param num_init: number of initial labels
         :param num_add_per_iter: number of labels to add in each iteration
         :param num_iter: number of iterations
-        :param x_train:
-        :param y_train:
-        :param x_test:
-        :param y_test:
         """
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_index)
@@ -38,7 +35,7 @@ class ActiveLearningExperiment:
         self.test_acc_hist = []
         self.labeled_idx_hist = []
 
-        self.log_dir = 'logs/{0}_{1}_{2}_{3}.txt'.format(instance, num_init, num_add_per_iter, dataset)
+        self.log_dir = 'logs/{0}_{1}_{2}_{3}.txt'.format(instance, num_init, num_add_per_iter, dataset_name)
 
     def _al_iter(self):
         """
@@ -58,6 +55,7 @@ class ActiveLearningExperiment:
         self.labeled_idx_hist.append(self.labeled_idx)
         with open(self.log_dir, 'w') as f:
             f.write(str(self.test_acc_hist).strip('[]'))
+            f.write('\n')
             for _iter in range(len(self.labeled_idx_hist)):
                 f.write(str(self.labeled_idx_hist[_iter]).strip('[]'))
 
