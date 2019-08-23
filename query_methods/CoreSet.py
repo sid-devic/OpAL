@@ -4,6 +4,7 @@ from .Query import QueryMethod, get_unlabeled_idx
 import numpy as np
 from scipy.spatial import distance_matrix
 from keras.models import Model
+from keras import backend as K
 
 
 class CoreSetSampling(QueryMethod):
@@ -47,8 +48,8 @@ class CoreSetSampling(QueryMethod):
 
         unlabeled_idx = get_unlabeled_idx(x_train, labeled_idx)
 
-        # use the learned representation for the k-greedy-center algorithm:
-        representation_model = Model(inputs=self.model.input, outputs=self.model.get_layer('softmax').input)
+        # get the input to the final layer, this will be our 'learned representation' which we fit k-center greedy to
+        representation_model = Model(inputs=self.model.input, outputs=self.model.layers[-1].input)
         representation = representation_model.predict(x_train, verbose=0)
         new_indices = self.greedy_k_center(representation[labeled_idx, :], representation[unlabeled_idx, :], amount)
         return np.hstack((labeled_idx, unlabeled_idx[new_indices]))

@@ -1,4 +1,5 @@
 import os
+import multiprocessing
 import numpy as np
 
 
@@ -13,7 +14,7 @@ class ActiveLearningExperiment:
         :param instance: Instance of ALexp for this configuration (we may need to run multiple)
         :param gpu_index: index of gpu to run the experiment on
         :param dataset_name: for logging purposes
-        :param model: keras model
+        :param model: function to build a keras model (input_shape, num_classes)
         :param train_func: Training function (see example)
         :param num_init: number of initial labels
         :param num_add_per_iter: number of labels to add in each iteration
@@ -22,8 +23,16 @@ class ActiveLearningExperiment:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_index)
 
+        # https://stackoverflow.com/questions/26239695/parallel-execution-of-class-methods
+        # If we would like to execute this class in parallel, we need to use
+        # a process queue so that methods can pass data back up
+        self.manager = multiprocessing.Manager()
+
         self.query_func = query_method
-        self.model = model
+        self.query_name = self.query_func.__name__
+
+        # build model
+        self.model = model(x_train[0].shape, len(y_train[0]))
         self.train_func = train_func
         self.num_add_per_iter = num_add_per_iter
         self.num_iter = num_iter
@@ -32,10 +41,10 @@ class ActiveLearningExperiment:
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
-        self.test_acc_hist = []
-        self.labeled_idx_hist = []
+        self.test_acc_hist = self.manager.list()
+        self.labeled_idx_hist = self.manager.list()
 
-        self.log_dir = 'logs/{0}_{1}_{2}_{3}.txt'.format(instance, num_init, num_add_per_iter, dataset_name)
+        self.log_dir = 'logs/{0}_{1}_{2}_{3}_{4}.txt'.format(self.query_name, instance, num_init, num_add_per_iter, dataset_name)
 
     def _al_iter(self):
         """
